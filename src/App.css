@@ -59,7 +59,7 @@ h1 {
 }
 
 /* -------------------
-   BARRA PROGRESSO CUSTOM
+   BARRA PROGRESSO CUSTOM CALORIE
    ------------------- */
 .calorie-tracker h2 {
   font-size: 22px;
@@ -82,6 +82,42 @@ h1 {
   border-radius: 20px;
   transition: width 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
+
+/* -------------------
+   MACRONUTRIENTI (Stile Apple Health)
+   ------------------- */
+.macros-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.macro-box {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 14px;
+  padding: 12px 5px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8e8e93;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(255,255,255,0.8);
+}
+
+.macro-box span {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.macro-carbs { color: #FF9500; } /* Arancione iOS */
+.macro-proteins { color: #FF3B30; } /* Rosso iOS */
+.macro-fats { color: #5AC8FA; } /* Azzurro iOS */
 
 /* -------------------
    CARD DEI PASTI (Stile Apple)
@@ -117,7 +153,8 @@ h1 {
 
 .meal-item.eaten .meal-name,
 .meal-item.eaten .meal-desc,
-.meal-item.eaten .meal-calories {
+.meal-item.eaten .meal-calories,
+.meal-item.eaten .meal-macros {
   opacity: 0.5;
   text-decoration: line-through;
 }
@@ -142,6 +179,21 @@ h1 {
   background: rgba(0, 122, 255, 0.1);
   padding: 6px 12px;
   border-radius: 12px;
+}
+
+.meal-macros {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.micro-tag {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  background: #f2f2f7;
+  color: #8e8e93;
 }
 
 /* -------------------
@@ -183,22 +235,4 @@ input[type="checkbox"] {
   display: none;
 }
 
-/* Bottone Scanner */
-.action-button {
-  width: 100%;
-  padding: 16px;
-  background-color: #007aff;
-  color: white;
-  border: none;
-  border-radius: 14px;
-  font-size: 16px;
-  font-weight: 700;
-  margin-top: 25px;
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.action-button:active {
-  transform: scale(0.96);
-}
+/* Bottone Scanner (se lo riattiveremo in
