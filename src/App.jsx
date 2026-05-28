@@ -7,7 +7,6 @@ const TARGET_CARBS = 365;
 const TARGET_PROTEINS = 160;
 const TARGET_FATS = 60;
 
-// MEMORIA DELLE DIETE ORIGINALI (Per il tasto Ripristina)
 const ORIGINAL_MEALS = {
   "1-Colazione": { name: "Polifenoli & Fibre Prebiotiche", desc: "80-100g avena integrale cotti, 100g frutti di bosco, 1 cucchiaino cacao amaro, scorza limone, 30g proteine isolate.", kcal: 450, carbs: 70, proteins: 40, fats: 10 },
   "1-Pranzo": { name: "Focus Energia & Amido Resistente", desc: "130g riso basmati o quinoa (freddi), 150g pesce o tempeh, carciofi/asparagi, 15g Olio EVO a crudo.", kcal: 720, carbs: 110, proteins: 45, fats: 20 },
@@ -35,6 +34,9 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [recipeResults, setRecipeResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  
+  // STATO PER I FILTRI
+  const [activeFilter, setActiveFilter] = useState('none'); 
 
   useEffect(() => {
     async function fetchMeals() {
@@ -78,13 +80,38 @@ function App() {
   const searchRecipes = async (e) => {
     e.preventDefault();
     if (!searchQuery) return;
+    
+    if (document.activeElement) document.activeElement.blur();
     setIsSearching(true);
+
     try {
       const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
-      const res = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${searchQuery}&addRecipeNutrition=true&number=6&apiKey=${apiKey}`);
+      
+      // COSTRUIAMO I PARAMETRI DEL FILTRO
+      let filterQuery = '';
+      if (activeFilter === 'match') {
+        const mealToReplace = meals.find(m => m.id === replacingMealId);
+        if (mealToReplace) {
+          // Cerchiamo ricette che abbiano macros simili al pasto che stiamo sostituendo
+          filterQuery = `&minCarbs=${Math.max(0, mealToReplace.carbs - 15)}&maxCarbs=${mealToReplace.carbs + 20}&minProtein=${Math.max(0, mealToReplace.proteins - 10)}&maxProtein=${mealToReplace.proteins + 20}&minFat=${Math.max(0, mealToReplace.fats - 10)}&maxFat=${mealToReplace.fats + 15}`;
+        }
+      } else if (activeFilter === 'protein') {
+        filterQuery = '&minProtein=30';
+      } else if (activeFilter === 'light') {
+        filterQuery = '&maxCalories=400&maxCarbs=35';
+      } else if (activeFilter === 'fast') {
+        filterQuery = '&maxReadyTime=20';
+      }
+
+      const res = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${searchQuery}&addRecipeNutrition=true&number=6${filterQuery}&apiKey=${apiKey}`);
       const data = await res.json();
-      if (data.results) setRecipeResults(data.results);
-      else alert("Nessuna ricetta trovata.");
+      
+      if (data.results && data.results.length > 0) {
+        setRecipeResults(data.results);
+      } else {
+        alert("Nessuna ricetta trovata con questi filtri. Prova a toglierli o a cercare un altro ingrediente!");
+        setRecipeResults([]);
+      }
     } catch (err) { alert("Errore nella ricerca."); }
     setIsSearching(false);
   };
@@ -99,24 +126,21 @@ function App() {
     const proteins = getNutrient('Protein');
     const fats = getNutrient('Fat');
     const newName = recipe.title;
-    const newDesc = "Ricetta personalizzata trovata con Spoonacular!";
+    const newDesc = `Tempo prep: ${recipe.readyInMinutes || '?'} min. Fonte: Spoonacular`;
 
     const { error } = await supabase.from('meals').update({ name: newName, description: newDesc, calories: kcal, carbs, proteins, fats }).eq('id', replacingMealId);
     if (!error) {
       setMeals(meals.map(m => m.id === replacingMealId ? { ...m, name: newName, description: newDesc, calories: kcal, carbs, proteins, fats, eaten: false } : m));
-      setReplacingMealId(null); setRecipeResults([]); setSearchQuery('');
+      setReplacingMealId(null); setRecipeResults([]); setSearchQuery(''); setActiveFilter('none');
     } else { alert("Errore di salvataggio."); }
   };
 
-  // NUOVA FUNZIONE: Ripristina la ricetta originale
   const revertToOriginal = async (meal) => {
     const original = ORIGINAL_MEALS[`${meal.variant}-${meal.meal_type}`];
     if (!original) return;
-
     const { error } = await supabase.from('meals').update({ 
       name: original.name, description: original.desc, calories: original.kcal, carbs: original.carbs, proteins: original.proteins, fats: original.fats 
     }).eq('id', meal.id);
-
     if (!error) {
       setMeals(meals.map(m => m.id === meal.id ? { ...m, name: original.name, description: original.desc, calories: original.kcal, carbs: original.carbs, proteins: original.proteins, fats: original.fats, eaten: false } : m));
     } else { alert("Errore durante il ripristino."); }
@@ -145,9 +169,7 @@ function App() {
       <main>
         <div className="meal-list">
           {meals.map((meal) => {
-            // Controlliamo se il pasto attuale è diverso da quello originale
             const isReplaced = meal.name !== ORIGINAL_MEALS[`${meal.variant}-${meal.meal_type}`]?.name;
-
             return (
               <div key={meal.id} className={`meal-card ${meal.eaten ? 'eaten' : ''}`}>
                 <div className="meal-header" onClick={() => toggleExpand(meal.id)}>
@@ -170,8 +192,6 @@ function App() {
                     <span className="micro-tag">🍗 {meal.proteins}g</span>
                     <span className="micro-tag">🥑 {meal.fats}g</span>
                   </div>
-                  
-                  {/* Nuova riga con i bottoni Sostituisci & Ripristina */}
                   <div className="meal-actions-row">
                     <button className="action-btn btn-replace" onClick={() => setReplacingMealId(meal.id)}>
                       🔄 Trova Sostituto
@@ -216,11 +236,10 @@ function App() {
         </div>
       )}
 
-      {/* OVERLAY RICETTARIO A BOTTOM SHEET CON GRIGLIA */}
       {replacingMealId && (
         <div className="scanner-overlay bottom-sheet">
           <div className="recipe-modal">
-            <button className="close-button" style={{top: '15px', right: '15px'}} onClick={() => { setReplacingMealId(null); setRecipeResults([]); setSearchQuery(''); }}>✕</button>
+            <button className="close-button" style={{top: '15px', right: '15px'}} onClick={() => { setReplacingMealId(null); setRecipeResults([]); setSearchQuery(''); setActiveFilter('none'); }}>✕</button>
             <h2>Sostituisci Pasto</h2>
             
             <form onSubmit={searchRecipes} className="recipe-search-bar">
@@ -228,13 +247,22 @@ function App() {
               <button type="submit" className="recipe-search-btn">{isSearching ? '...' : 'Cerca'}</button>
             </form>
 
+            {/* NUOVA BARRA SCORREVOLE DEI FILTRI */}
+            <div className="filters-container">
+              <button className={`filter-chip ${activeFilter === 'none' ? 'active' : ''}`} onClick={() => setActiveFilter('none')}>Nessun filtro</button>
+              <button className={`filter-chip ${activeFilter === 'match' ? 'active' : ''}`} onClick={() => setActiveFilter('match')}>🎯 Match Macro</button>
+              <button className={`filter-chip ${activeFilter === 'protein' ? 'active' : ''}`} onClick={() => setActiveFilter('protein')}>💪 High Protein</button>
+              <button className={`filter-chip ${activeFilter === 'light' ? 'active' : ''}`} onClick={() => setActiveFilter('light')}>💃 Light / Low Carb</button>
+              <button className={`filter-chip ${activeFilter === 'fast' ? 'active' : ''}`} onClick={() => setActiveFilter('fast')}>⚡️ Veloce (&lt;20m)</button>
+            </div>
+
             <div className="recipe-results">
               {recipeResults.map((recipe) => {
                 const previewKcal = recipe.nutrition?.nutrients.find(n => n.name === 'Calories')?.amount || 0;
                 const previewPro = recipe.nutrition?.nutrients.find(n => n.name === 'Protein')?.amount || 0;
                 
                 return (
-                  <div key={recipe.id} className="recipe-card">
+                  <div key={recipe.id} className="recipe-card" onClick={() => confirmReplacement(recipe)} style={{ cursor: 'pointer' }}>
                     <img src={recipe.image} className="recipe-img" alt="Ricetta" />
                     <div className="recipe-info">
                       <div className="recipe-title">{recipe.title}</div>
@@ -242,9 +270,9 @@ function App() {
                         <span className="micro-tag">🔥 {Math.round(previewKcal)}</span>
                         <span className="micro-tag">🍗 {Math.round(previewPro)}g</span>
                       </div>
-                      <button className="confirm-replace-btn" onClick={() => confirmReplacement(recipe)}>
-                        Usa questo
-                      </button>
+                      <div className="confirm-replace-btn" style={{textAlign: 'center'}}>
+                        Seleziona
+                      </div>
                     </div>
                   </div>
                 )

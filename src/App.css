@@ -81,3 +81,41 @@ h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2
 .recipe-info { display: flex; flex-direction: column; flex: 1; justify-content: flex-start; text-align: left; gap: 8px; }
 .recipe-title { font-weight: 700; font-size: 16px; color: #f8fafc; line-height: 1.4; margin: 0; }
 .confirm-replace-btn { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.5); border-radius: 8px; padding: 8px 12px; font-weight: bold; font-size: 12px; align-self: flex-start; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
+/* -------------------
+   FILTRI RICERCA (Chips)
+   ------------------- */
+   .filters-container {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 15px;
+    margin-bottom: 10px;
+    /* Nasconde la barra di scorrimento ma mantiene lo scroll */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .filters-container::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .filter-chip {
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap; /* Impedisce al testo di andare a capo */
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  
+  .filter-chip.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
