@@ -1,8 +1,9 @@
-/* Sfondo dell'app in stile iOS */
+/* Sfondo Dark Mode (Antracite scuro a Blu Navy) */
 body {
-  background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #1c1c1e 0%, #0f172a 100%);
   margin: 0;
   min-height: 100vh;
+  color: #f8fafc;
 }
 
 .app-container {
@@ -10,31 +11,31 @@ body {
   margin: 0 auto;
   padding: 20px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: #1c1c1e;
 }
 
 header {
   text-align: center;
-  margin-bottom: 30px;
-  padding-top: 20px;
+  margin-bottom: 25px;
+  padding-top: 10px;
 }
 
 h1 {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.5px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
+  color: #ffffff;
 }
 
 /* -------------------
-   SEGMENTED CONTROL (Stile iOS)
+   SEGMENTED CONTROL (Dark iOS)
    ------------------- */
 .segmented-control {
-  background-color: rgba(227, 227, 232, 0.8);
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   display: flex;
   padding: 4px;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -46,20 +47,20 @@ h1 {
   background: transparent;
   font-size: 14px;
   font-weight: 600;
-  color: #8e8e93;
+  color: #94a3b8;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all 0.3s ease;
 }
 
 .segment-button.active {
-  background-color: #ffffff;
-  color: #000000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  background-color: #3b82f6; /* Blu acceso */
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* -------------------
-   BARRA PROGRESSO CUSTOM CALORIE
+   BARRA PROGRESSO
    ------------------- */
 .calorie-tracker h2 {
   font-size: 22px;
@@ -68,316 +69,200 @@ h1 {
 }
 
 .progress-bg {
-  background-color: #e5e5ea;
-  height: 16px;
+  background-color: rgba(255, 255, 255, 0.1);
+  height: 14px;
   border-radius: 20px;
   overflow: hidden;
   position: relative;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #34c759 0%, #30d158 100%);
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
   border-radius: 20px;
   transition: width 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* -------------------
-   MACRONUTRIENTI (Stile Apple Health)
+   MACRONUTRIENTI (Dark Glass)
    ------------------- */
 .macros-container {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   margin-top: 20px;
 }
 
 .macro-box {
   flex: 1;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 14px;
   padding: 12px 5px;
   text-align: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: #8e8e93;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(255,255,255,0.8);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .macro-box span {
   display: block;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   margin-top: 4px;
 }
 
-.macro-carbs { color: #FF9500; } /* Arancione iOS */
-.macro-proteins { color: #FF3B30; } /* Rosso iOS */
-.macro-fats { color: #5AC8FA; } /* Azzurro iOS */
+.macro-carbs { color: #f59e0b; } 
+.macro-proteins { color: #ef4444; } 
+.macro-fats { color: #0ea5e9; } 
 
 /* -------------------
-   CARD DEI PASTI (Stile Apple)
+   CARD DEI PASTI (Espandibili)
    ------------------- */
 .meal-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  margin-bottom: 80px; /* Spazio per il tasto fotocamera */
 }
 
-.meal-item {
-  display: flex;
-  align-items: center;
-  padding: 18px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 20px;
-  cursor: pointer;
+.meal-card {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-.meal-item:active {
-  transform: scale(0.97);
-}
-
-.meal-item.eaten {
-  background: rgba(255, 255, 255, 0.4);
-  box-shadow: none;
-}
-
-.meal-item.eaten .meal-name,
-.meal-item.eaten .meal-desc,
-.meal-item.eaten .meal-calories,
-.meal-item.eaten .meal-macros {
+.meal-card.eaten {
   opacity: 0.5;
-  text-decoration: line-through;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.meal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.meal-info-compact {
+  flex: 1;
+}
+
+.meal-type {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #3b82f6;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
 }
 
 .meal-name {
   font-size: 16px;
   font-weight: 700;
-  color: #000;
+  color: #f8fafc;
 }
 
-.meal-desc {
-  font-size: 13px;
-  color: #8e8e93;
-  margin-top: 6px;
-  line-height: 1.4;
+.meal-card.eaten .meal-name {
+  text-decoration: line-through;
+}
+
+.meal-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .meal-calories {
   font-weight: 700;
-  color: #007aff;
-  font-size: 15px;
-  background: rgba(0, 122, 255, 0.1);
-  padding: 6px 12px;
-  border-radius: 12px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* -------------------
+   ANIMAZIONE FISARMONICA (Accordion)
+   ------------------- */
+.meal-details {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0 16px;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.meal-details.expanded {
+  max-height: 300px;
+  opacity: 1;
+  padding: 0 16px 16px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 5px;
+  padding-top: 15px;
+}
+
+.meal-desc {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.5;
+  margin-bottom: 12px;
 }
 
 .meal-macros {
   display: flex;
   gap: 8px;
-  margin-top: 8px;
 }
 
 .micro-tag {
   font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
   font-weight: 700;
-  background: #f2f2f7;
-  color: #8e8e93;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
 }
 
 /* -------------------
    CHECKBOX CUSTOM
    ------------------- */
-.custom-checkbox {
-  width: 26px;
-  height: 26px;
+.check-btn {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: 2px solid #d1d1d6;
+  border: 2px solid #475569;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 15px;
-  transition: all 0.2s ease;
-}
-
-.meal-item.eaten .custom-checkbox {
-  background-color: #34c759;
-  border-color: #34c759;
-}
-
-.custom-checkbox::after {
-  content: '✓';
+  cursor: pointer;
   color: white;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
-  opacity: 0;
-  transform: scale(0);
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all 0.2s ease;
+  padding: 0;
 }
 
-.meal-item.eaten .custom-checkbox::after {
-  opacity: 1;
-  transform: scale(1);
+.check-btn.checked {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
 }
 
-input[type="checkbox"] {
-  display: none;
-}
-
-/* -------------------
-   TASTO FLUTTUANTE (FAB) & SCANNER OVERLAY
-   ------------------- */
-   .fab-button {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 60px;
-    height: 60px;
-    border-radius: 30px;
-    background: linear-gradient(135deg, #007aff 0%, #0056b3 100%);
-    color: white;
-    font-size: 28px;
-    box-shadow: 0 8px 20px rgba(0, 122, 255, 0.4);
-    border: none;
-    cursor: pointer;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease;
-  }
-  
-  .fab-button:active {
-    transform: scale(0.9);
-  }
-  
-  .scanner-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    z-index: 2000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  
-  .close-button {
-    position: absolute;
-    top: 50px;
-    right: 25px;
-    background: #333;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    font-weight: bold;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  /* -------------------
-     SCHEDA PRODOTTO (Stile Yuka)
-     ------------------- */
-  .product-modal {
-    background: white;
-    border-radius: 24px;
-    padding: 25px;
-    width: 90%;
-    max-width: 350px;
-    text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    animation: slideUp 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
-  
-  @keyframes slideUp {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  
-  .product-image {
-    width: 140px;
-    height: 140px;
-    object-fit: contain;
-    border-radius: 16px;
-    margin-bottom: 15px;
-    background: #f8f9fa;
-    padding: 10px;
-  }
-  
-  .product-title {
-    font-size: 20px;
-    font-weight: 800;
-    margin-bottom: 10px;
-    color: #1c1c1e;
-  }
-  
-  /* Colori del Nutri-Score */
-  .nutriscore {
-    display: inline-block;
-    padding: 6px 16px;
-    border-radius: 12px;
-    font-weight: 800;
-    color: white;
-    margin-bottom: 20px;
-    font-size: 18px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .score-a { background: #038141; } /* Ottimo */
-  .score-b { background: #85BB2F; } /* Buono */
-  .score-c { background: #FECB02; color: #333; } /* Discreto */
-  .score-d { background: #EE8100; } /* Scarso */
-  .score-e { background: #E63E11; } /* Pessimo */
-  .score-unknown { background: #8e8e93; }
-  
-  .product-macros {
-    display: flex;
-    justify-content: space-around;
-    background: #f2f2f7;
-    padding: 15px;
-    border-radius: 16px;
-    margin-bottom: 20px;
-  }
-  
-  .pm-item {
-    display: flex;
-    flex-direction: column;
-    font-size: 12px;
-    color: #8e8e93;
-    font-weight: 600;
-  }
-  
-  .pm-item span {
-    font-size: 16px;
-    font-weight: 800;
-    color: #1c1c1e;
-    margin-top: 4px;
-  }
-  
-  .add-to-meal-btn {
-    width: 100%;
-    padding: 14px;
-    background: #34c759;
-    color: white;
-    border: none;
-    border-radius: 14px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-  }
+/* Mantieni in fondo le classi Yuka/Scanner del messaggio precedente per il tasto blu fotocamera */
+.fab-button { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 30px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; font-size: 28px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); border: none; cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; }
+.fab-button:active { transform: scale(0.9); }
+.scanner-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+.close-button { position: absolute; top: 50px; right: 25px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-weight: bold; font-size: 16px; cursor: pointer; }
+.product-modal { background: #1e293b; border-radius: 24px; padding: 25px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
+.product-image { width: 140px; height: 140px; object-fit: contain; border-radius: 16px; margin-bottom: 15px; background: white; padding: 10px; }
+.product-title { font-size: 20px; font-weight: 800; margin-bottom: 10px; color: white; }
+.nutriscore { display: inline-block; padding: 6px 16px; border-radius: 12px; font-weight: 800; color: white; margin-bottom: 20px; font-size: 18px; text-transform: uppercase; }
+.score-a { background: #038141; } .score-b { background: #85BB2F; } .score-c { background: #FECB02; color: #333; } .score-d { background: #EE8100; } .score-e { background: #E63E11; } .score-unknown { background: #475569; }
+.product-macros { display: flex; justify-content: space-around; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px; margin-bottom: 20px; }
+.pm-item { display: flex; flex-direction: column; font-size: 12px; color: #94a3b8; font-weight: 600; }
+.pm-item span { font-size: 16px; font-weight: 800; color: white; margin-top: 4px; }
+.add-to-meal-btn { width: 100%; padding: 14px; background: #3b82f6; color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; }

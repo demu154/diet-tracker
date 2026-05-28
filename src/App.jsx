@@ -10,8 +10,8 @@ const TARGET_FATS = 60;
 function App() {
   const [meals, setMeals] = useState([]);
   const [variant, setVariant] = useState(1);
+  const [expandedId, setExpandedId] = useState(null); // Controlla quale ricetta è aperta
   
-  // Stati per la funzionalità Scanner tipo Yuka
   const [showScanner, setShowScanner] = useState(false);
   const [scannedProduct, setScannedProduct] = useState(null);
 
@@ -25,11 +25,13 @@ function App() {
       if (!error) setMeals(data.map(meal => ({ ...meal, eaten: false })));
     }
     fetchMeals();
+    setExpandedId(null); // Chiude le card se cambi menù
   }, [variant]);
 
   const totalCalories = meals.reduce((acc, meal) => acc + meal.calories, 0);
   const consumedCalories = meals.filter(m => m.eaten).reduce((acc, meal) => acc + meal.calories, 0);
   const progressPercentage = totalCalories > 0 ? (consumedCalories / totalCalories) * 100 : 0;
+  
   const consumedCarbs = meals.filter(m => m.eaten).reduce((acc, meal) => acc + (meal.carbs || 0), 0);
   const consumedProteins = meals.filter(m => m.eaten).reduce((acc, meal) => acc + (meal.proteins || 0), 0);
   const consumedFats = meals.filter(m => m.eaten).reduce((acc, meal) => acc + (meal.fats || 0), 0);
@@ -38,19 +40,19 @@ function App() {
     setMeals(meals.map(meal => meal.id === id ? { ...meal, eaten: !meal.eaten } : meal));
   };
 
-  // IL MOTORE DI RICERCA YUKA
+  const toggleExpand = (id) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
+
   const handleScan = async (barcode) => {
-    setShowScanner(false); // Chiude la fotocamera
-    
+    setShowScanner(false); 
     try {
       const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
       const data = await response.json();
-      
       if (data.status === 1) {
         const p = data.product;
-        // Prepariamo i dati formattati per la nostra scheda
         setScannedProduct({
-          name: p.product_name_it || p.product_name || "Prodotto Sconosciuto",
+          name: p.product_name_it || p.product_name || "Prodotto",
           image: p.image_url || "https://via.placeholder.com/150?text=No+Foto",
           score: p.nutriscore_grade ? p.nutriscore_grade.toLowerCase() : "unknown",
           kcal: p.nutriments['energy-kcal_100g'] || 0,
@@ -59,10 +61,10 @@ function App() {
           fats: p.nutriments['fat_100g'] || 0
         });
       } else {
-        alert("Prodotto non trovato nel database globale.");
+        alert("Prodotto non trovato.");
       }
     } catch (err) {
-      alert("Errore di connessione. Riprova.");
+      alert("Errore di connessione.");
     }
   };
 
@@ -80,25 +82,44 @@ function App() {
         </div>
 
         <div className="calorie-tracker">
-          <h2>{consumedCalories} <span style={{ color: '#8e8e93', fontSize: '18px' }}>/ {totalCalories} kcal</span></h2>
+          <h2>{consumedCalories} <span style={{ color: '#64748b', fontSize: '18px' }}>/ {totalCalories} kcal</span></h2>
           <div className="progress-bg"><div className="progress-fill" style={{ width: `${progressPercentage}%` }}></div></div>
         </div>
 
         <div className="macros-container">
-          <div className="macro-box">CARBO<span className="macro-carbs">{consumedCarbs} / {TARGET_CARBS}g</span></div>
-          <div className="macro-box">PRO<span className="macro-proteins">{consumedProteins} / {TARGET_PROTEINS}g</span></div>
-          <div className="macro-box">GRASSI<span className="macro-fats">{consumedFats} / {TARGET_FATS}g</span></div>
+          <div className="macro-box">CARBO<span className="macro-carbs">{consumedCarbs}/{TARGET_CARBS}g</span></div>
+          <div className="macro-box">PRO<span className="macro-proteins">{consumedProteins}/{TARGET_PROTEINS}g</span></div>
+          <div className="macro-box">GRASSI<span className="macro-fats">{consumedFats}/{TARGET_FATS}g</span></div>
         </div>
       </header>
 
       <main>
         <div className="meal-list">
           {meals.map((meal) => (
-            <label key={meal.id} className={`meal-item ${meal.eaten ? 'eaten' : ''}`}>
-              <input type="checkbox" checked={meal.eaten} onChange={() => toggleMeal(meal.id)} />
-              <div className="custom-checkbox"></div>
-              <div style={{ flex: 1 }}>
-                <div className="meal-name">{meal.meal_type}: {meal.name}</div>
+            <div key={meal.id} className={`meal-card ${meal.eaten ? 'eaten' : ''}`}>
+              
+              {/* HEADER COMPATTO (Cliccabile per espandere) */}
+              <div className="meal-header" onClick={() => toggleExpand(meal.id)}>
+                <div className="meal-info-compact">
+                  <div className="meal-type">{meal.meal_type}</div>
+                  <div className="meal-name">{meal.name}</div>
+                </div>
+                <div className="meal-actions">
+                  <div className="meal-calories">{meal.calories} kcal</div>
+                  {/* BOTTONE SPUNTA (Separato) */}
+                  <button 
+                    className={`check-btn ${meal.eaten ? 'checked' : ''}`} 
+                    onClick={(e) => { 
+                      e.stopPropagation(); // Evita che si apra la card se clicchi solo la spunta
+                      toggleMeal(meal.id); 
+                    }}>
+                    {meal.eaten ? '✓' : ''}
+                  </button>
+                </div>
+              </div>
+
+              {/* CONTENUTO ESPANDIBILE (La Fisarmonica) */}
+              <div className={`meal-details ${expandedId === meal.id ? 'expanded' : ''}`}>
                 <div className="meal-desc">{meal.description}</div>
                 <div className="meal-macros">
                   <span className="micro-tag">🍞 {meal.carbs}g</span>
@@ -106,18 +127,14 @@ function App() {
                   <span className="micro-tag">🥑 {meal.fats}g</span>
                 </div>
               </div>
-              <div className="meal-calories">{meal.calories} kcal</div>
-            </label>
+
+            </div>
           ))}
         </div>
       </main>
 
-      {/* TASTO FLUTTUANTE IN BASSO A DESTRA */}
-      <button className="fab-button" onClick={() => setShowScanner(true)}>
-        📷
-      </button>
+      <button className="fab-button" onClick={() => setShowScanner(true)}>📷</button>
 
-      {/* OVERLAY FOTOCAMERA */}
       {showScanner && (
         <div className="scanner-overlay">
           <button className="close-button" onClick={() => setShowScanner(false)}>✕</button>
@@ -127,33 +144,26 @@ function App() {
         </div>
       )}
 
-      {/* MODAL PRODOTTO (STILE YUKA) */}
       {scannedProduct && (
         <div className="scanner-overlay">
           <div className="product-modal">
-            <button className="close-button" style={{top: '10px', right: '10px', background: '#e5e5ea', color: '#000'}} onClick={() => setScannedProduct(null)}>✕</button>
-            
+            <button className="close-button" style={{top: '10px', right: '10px'}} onClick={() => setScannedProduct(null)}>✕</button>
             <img src={scannedProduct.image} alt="Prodotto" className="product-image" />
             <div className="product-title">{scannedProduct.name}</div>
-            
-            {/* Voto Nutri-Score */}
             <div className={`nutriscore score-${scannedProduct.score}`}>
               {scannedProduct.score === 'unknown' ? '?' : `Nutri-Score: ${scannedProduct.score.toUpperCase()}`}
             </div>
-
-            {/* Macro specifici trovati */}
             <div className="product-macros">
               <div className="pm-item">Kcal<span>{Math.round(scannedProduct.kcal)}</span></div>
               <div className="pm-item">Carbo<span>{Math.round(scannedProduct.carbs)}g</span></div>
               <div className="pm-item">Pro<span>{Math.round(scannedProduct.proteins)}g</span></div>
               <div className="pm-item">Grassi<span>{Math.round(scannedProduct.fats)}g</span></div>
             </div>
-
             <button className="add-to-meal-btn" onClick={() => {
-              alert("Presto potremo aggiungere questo prodotto direttamente alla dieta!");
+              alert("Aggiunta al diario in arrivo nello Step 2!");
               setScannedProduct(null);
             }}>
-              Vedi Alternativa / Aggiungi
+              Aggiungi prodotto
             </button>
           </div>
         </div>
