@@ -69,15 +69,15 @@ h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2
 .recipe-search-input { flex: 1; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.2); background: #1e293b; color: white; font-size: 16px; }
 .recipe-search-btn { background: #3b82f6; color: white; border: none; border-radius: 12px; padding: 0 20px; font-weight: bold; cursor: pointer; }
 
-/* Layout a Singola Colonna Orizzontale (Fix Testo tagliato) */
-.recipe-results { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; padding-bottom: 40px; margin-top: 5px; }
-.recipe-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; overflow: hidden; display: flex; flex-direction: row; padding: 12px; transition: transform 0.2s; align-items: stretch; gap: 15px; cursor: pointer; }
+/* Layout a Singola Colonna (Libero da restrizioni) */
+.recipe-results { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; flex: 1; padding-bottom: 40px; margin-top: 5px; }
+.recipe-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; display: flex; flex-direction: row; padding: 14px; transition: transform 0.2s; align-items: flex-start; gap: 15px; cursor: pointer; }
 .recipe-card:active { transform: scale(0.97); }
 
-/* Immagine a sinistra */
-.recipe-img { width: 95px; height: 95px; object-fit: cover; border-radius: 12px; flex-shrink: 0; }
+/* Immagine fissa ancorata in alto */
+.recipe-img { width: 90px; height: 90px; object-fit: cover; border-radius: 12px; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
 
-/* Info e bottone a destra, testo allineato in alto */
-.recipe-info { display: flex; flex-direction: column; flex: 1; justify-content: space-between; text-align: left; padding: 2px 0; }
-.recipe-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; color: #f8fafc; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.confirm-replace-btn { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.5); border-radius: 8px; padding: 6px 12px; font-weight: bold; font-size: 12px; margin-top: auto; align-self: flex-start; text-transform: uppercase; letter-spacing: 0.5px; }
+/* Info testo libere di respirare */
+.recipe-info { display: flex; flex-direction: column; flex: 1; justify-content: flex-start; text-align: left; gap: 8px; }
+.recipe-title { font-weight: 700; font-size: 16px; color: #f8fafc; line-height: 1.4; margin: 0; }
+.confirm-replace-btn { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.5); border-radius: 8px; padding: 8px 12px; font-weight: bold; font-size: 12px; align-self: flex-start; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
