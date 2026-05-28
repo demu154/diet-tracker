@@ -7,6 +7,22 @@ const TARGET_CARBS = 365;
 const TARGET_PROTEINS = 160;
 const TARGET_FATS = 60;
 
+// MEMORIA DELLE DIETE ORIGINALI (Per il tasto Ripristina)
+const ORIGINAL_MEALS = {
+  "1-Colazione": { name: "Polifenoli & Fibre Prebiotiche", desc: "80-100g avena integrale cotti, 100g frutti di bosco, 1 cucchiaino cacao amaro, scorza limone, 30g proteine isolate.", kcal: 450, carbs: 70, proteins: 40, fats: 10 },
+  "1-Pranzo": { name: "Focus Energia & Amido Resistente", desc: "130g riso basmati o quinoa (freddi), 150g pesce o tempeh, carciofi/asparagi, 15g Olio EVO a crudo.", kcal: 720, carbs: 110, proteins: 45, fats: 20 },
+  "1-Spuntino": { name: "Pre-Workout / Pre-Ballo", desc: "1 banana acerba o mela con buccia, 20-30g noci/mandorle, 1 bicchiere Kombucha o Kefir d'acqua.", kcal: 280, carbs: 50, proteins: 25, fats: 10 },
+  "1-Cena": { name: "Recupero Muscolare & Butirrato", desc: "350g patate/patate dolci fredde, 200g fagioli neri/azuki o pesce azzurro, radicchio e carote, 15g Olio EVO.", kcal: 650, carbs: 135, proteins: 50, fats: 20 },
+  "2-Colazione": { name: "Overnight Oats", desc: "100g fiocchi d'avena (ammollo a freddo in latte vegetale), 1 mela a cubetti, cannella, 30g proteine.", kcal: 520, carbs: 70, proteins: 40, fats: 10 },
+  "2-Pranzo": { name: "Il Piatto del Microbiota", desc: "140g Riso Venere o Grano Saraceno freddo, 180g Tempeh a cubetti, Topinambur o sedano saltati, 15g Olio EVO.", kcal: 850, carbs: 110, proteins: 45, fats: 20 },
+  "2-Spuntino": { name: "Ricarica Pre-Allenamento", desc: "1 banana leggermente verde, Kombucha o Kefir d'acqua, 20g noci.", kcal: 250, carbs: 50, proteins: 25, fats: 10 },
+  "2-Cena": { name: "Recupero con Legumi", desc: "250g zuppa densa di lenticchie/azuki, 300g patate fredde, crauti al naturale, 15g Olio EVO, cioccolato fondente (>85%).", kcal: 700, carbs: 135, proteins: 50, fats: 20 },
+  "3-Colazione": { name: "Porridge agli Agrumi", desc: "100g avena cotta in acqua, 1 arancia a fette, scorza di limone, 10g cacao amaro, 30g proteine.", kcal: 450, carbs: 70, proteins: 40, fats: 10 },
+  "3-Pranzo": { name: "Pasta \"Fredda\" Potenziata", desc: "140g Pasta di farro o integrale fredda, 180g filetto pesce bianco (es. merluzzo), carote/asparagi, 15g Olio EVO.", kcal: 780, carbs: 110, proteins: 45, fats: 20 },
+  "3-Spuntino": { name: "Snack Veloce", desc: "4-5 gallette di mais al naturale, 50g fesa di tacchino, 20g mandorle.", kcal: 280, carbs: 50, proteins: 25, fats: 10 },
+  "3-Cena": { name: "Ricarica Omega-3", desc: "400g Patate dolci fredde, 150g Salmone fresco al forno o Sgombro, carciofi al vapore, 10g Olio EVO, aceto di mele.", kcal: 750, carbs: 135, proteins: 50, fats: 20 }
+};
+
 function App() {
   const [meals, setMeals] = useState([]);
   const [variant, setVariant] = useState(1);
@@ -32,7 +48,6 @@ function App() {
   const totalCalories = meals.reduce((acc, meal) => acc + meal.calories, 0);
   const consumedCalories = meals.filter(m => m.eaten).reduce((acc, meal) => acc + meal.calories, 0);
   const progressPercentage = totalCalories > 0 ? (consumedCalories / totalCalories) * 100 : 0;
-  
   const consumedCarbs = meals.filter(m => m.eaten).reduce((acc, meal) => acc + (meal.carbs || 0), 0);
   const consumedProteins = meals.filter(m => m.eaten).reduce((acc, meal) => acc + (meal.proteins || 0), 0);
   const consumedFats = meals.filter(m => m.eaten).reduce((acc, meal) => acc + (meal.fats || 0), 0);
@@ -60,56 +75,51 @@ function App() {
     } catch (err) { alert("Errore di connessione."); }
   };
 
-  // NUOVA RICERCA CON SPOONACULAR
   const searchRecipes = async (e) => {
     e.preventDefault();
     if (!searchQuery) return;
     setIsSearching(true);
     try {
       const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
-      // Chiamata super potente: cerca la ricetta e si fa dare subito anche i macro
       const res = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${searchQuery}&addRecipeNutrition=true&number=6&apiKey=${apiKey}`);
       const data = await res.json();
-      if (data.results) {
-        setRecipeResults(data.results);
-      } else {
-        alert("Nessuna ricetta trovata o chiave API mancante.");
-      }
-    } catch (err) {
-      alert("Errore nella ricerca della ricetta.");
-    }
+      if (data.results) setRecipeResults(data.results);
+      else alert("Nessuna ricetta trovata.");
+    } catch (err) { alert("Errore nella ricerca."); }
     setIsSearching(false);
   };
 
-  // SOSTITUISCI IL PASTO (Logica aggiornata per Spoonacular)
   const confirmReplacement = async (recipe) => {
-    // Spoonacular nasconde i macro dentro un array di "nutrients", li peschiamo col nome
     const getNutrient = (name) => {
       const nutrient = recipe.nutrition?.nutrients.find(n => n.name === name);
       return nutrient ? Math.round(nutrient.amount) : 0;
     };
-
     const kcal = getNutrient('Calories');
     const carbs = getNutrient('Carbohydrates');
     const proteins = getNutrient('Protein');
     const fats = getNutrient('Fat');
-    
     const newName = recipe.title;
-    const newDesc = "Ricetta trovata online via Spoonacular (puoi vedere i dettagli sul web!)";
+    const newDesc = "Ricetta personalizzata trovata con Spoonacular!";
 
-    const { error } = await supabase
-      .from('meals')
-      .update({ name: newName, description: newDesc, calories: kcal, carbs, proteins, fats })
-      .eq('id', replacingMealId);
-
+    const { error } = await supabase.from('meals').update({ name: newName, description: newDesc, calories: kcal, carbs, proteins, fats }).eq('id', replacingMealId);
     if (!error) {
       setMeals(meals.map(m => m.id === replacingMealId ? { ...m, name: newName, description: newDesc, calories: kcal, carbs, proteins, fats, eaten: false } : m));
-      setReplacingMealId(null);
-      setRecipeResults([]);
-      setSearchQuery('');
-    } else {
-      alert("Errore durante il salvataggio su Supabase.");
-    }
+      setReplacingMealId(null); setRecipeResults([]); setSearchQuery('');
+    } else { alert("Errore di salvataggio."); }
+  };
+
+  // NUOVA FUNZIONE: Ripristina la ricetta originale
+  const revertToOriginal = async (meal) => {
+    const original = ORIGINAL_MEALS[`${meal.variant}-${meal.meal_type}`];
+    if (!original) return;
+
+    const { error } = await supabase.from('meals').update({ 
+      name: original.name, description: original.desc, calories: original.kcal, carbs: original.carbs, proteins: original.proteins, fats: original.fats 
+    }).eq('id', meal.id);
+
+    if (!error) {
+      setMeals(meals.map(m => m.id === meal.id ? { ...m, name: original.name, description: original.desc, calories: original.kcal, carbs: original.carbs, proteins: original.proteins, fats: original.fats, eaten: false } : m));
+    } else { alert("Errore durante il ripristino."); }
   };
 
   return (
@@ -134,40 +144,53 @@ function App() {
 
       <main>
         <div className="meal-list">
-          {meals.map((meal) => (
-            <div key={meal.id} className={`meal-card ${meal.eaten ? 'eaten' : ''}`}>
-              <div className="meal-header" onClick={() => toggleExpand(meal.id)}>
-                <div className="meal-info-compact">
-                  <div className="meal-type">{meal.meal_type}</div>
-                  <div className="meal-name">{meal.name}</div>
-                </div>
-                <div className="meal-actions">
-                  <div className="meal-calories">{meal.calories} kcal</div>
-                  <button className={`check-btn ${meal.eaten ? 'checked' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMeal(meal.id); }}>
-                    {meal.eaten ? '✓' : ''}
-                  </button>
-                </div>
-              </div>
+          {meals.map((meal) => {
+            // Controlliamo se il pasto attuale è diverso da quello originale
+            const isReplaced = meal.name !== ORIGINAL_MEALS[`${meal.variant}-${meal.meal_type}`]?.name;
 
-              <div className={`meal-details ${expandedId === meal.id ? 'expanded' : ''}`}>
-                <div className="meal-desc">{meal.description}</div>
-                <div className="meal-macros">
-                  <span className="micro-tag">🍞 {meal.carbs}g</span>
-                  <span className="micro-tag">🍗 {meal.proteins}g</span>
-                  <span className="micro-tag">🥑 {meal.fats}g</span>
+            return (
+              <div key={meal.id} className={`meal-card ${meal.eaten ? 'eaten' : ''}`}>
+                <div className="meal-header" onClick={() => toggleExpand(meal.id)}>
+                  <div className="meal-info-compact">
+                    <div className="meal-type">{meal.meal_type}</div>
+                    <div className="meal-name">{meal.name}</div>
+                  </div>
+                  <div className="meal-actions">
+                    <div className="meal-calories">{meal.calories} kcal</div>
+                    <button className={`check-btn ${meal.eaten ? 'checked' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMeal(meal.id); }}>
+                      {meal.eaten ? '✓' : ''}
+                    </button>
+                  </div>
                 </div>
-                <button className="replace-meal-btn" onClick={() => setReplacingMealId(meal.id)}>
-                  🔄 Trova Sostituto
-                </button>
+
+                <div className={`meal-details ${expandedId === meal.id ? 'expanded' : ''}`}>
+                  <div className="meal-desc">{meal.description}</div>
+                  <div className="meal-macros">
+                    <span className="micro-tag">🍞 {meal.carbs}g</span>
+                    <span className="micro-tag">🍗 {meal.proteins}g</span>
+                    <span className="micro-tag">🥑 {meal.fats}g</span>
+                  </div>
+                  
+                  {/* Nuova riga con i bottoni Sostituisci & Ripristina */}
+                  <div className="meal-actions-row">
+                    <button className="action-btn btn-replace" onClick={() => setReplacingMealId(meal.id)}>
+                      🔄 Trova Sostituto
+                    </button>
+                    {isReplaced && (
+                      <button className="action-btn btn-revert" onClick={() => revertToOriginal(meal)}>
+                        ↩️ Originale
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </main>
 
       <button className="fab-button" onClick={() => setShowScanner(true)}>📷</button>
 
-      {/* OVERLAY YUKA */}
       {showScanner && (
         <div className="scanner-overlay">
           <button className="close-button" onClick={() => setShowScanner(false)}>✕</button>
@@ -193,21 +216,20 @@ function App() {
         </div>
       )}
 
-      {/* OVERLAY RICETTARIO SPOONACULAR */}
+      {/* OVERLAY RICETTARIO A BOTTOM SHEET CON GRIGLIA */}
       {replacingMealId && (
-        <div className="scanner-overlay">
+        <div className="scanner-overlay bottom-sheet">
           <div className="recipe-modal">
-            <button className="close-button" style={{top: '-15px', right: '-10px'}} onClick={() => { setReplacingMealId(null); setRecipeResults([]); setSearchQuery(''); }}>✕</button>
-            <h2 style={{marginTop: 0, marginBottom: '10px', color: 'white', fontSize: '20px'}}>Sostituisci Pasto</h2>
+            <button className="close-button" style={{top: '15px', right: '15px'}} onClick={() => { setReplacingMealId(null); setRecipeResults([]); setSearchQuery(''); }}>✕</button>
+            <h2>Sostituisci Pasto</h2>
             
             <form onSubmit={searchRecipes} className="recipe-search-bar">
-              <input type="text" className="recipe-search-input" placeholder="Es. Salmon, Chicken, Pasta..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+              <input type="text" className="recipe-search-input" placeholder="Es. Salmon, Beef, Rice..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
               <button type="submit" className="recipe-search-btn">{isSearching ? '...' : 'Cerca'}</button>
             </form>
 
             <div className="recipe-results">
               {recipeResults.map((recipe) => {
-                // Peschiamo proteine e calorie per farle vedere in anteprima
                 const previewKcal = recipe.nutrition?.nutrients.find(n => n.name === 'Calories')?.amount || 0;
                 const previewPro = recipe.nutrition?.nutrients.find(n => n.name === 'Protein')?.amount || 0;
                 
@@ -216,7 +238,7 @@ function App() {
                     <img src={recipe.image} className="recipe-img" alt="Ricetta" />
                     <div className="recipe-info">
                       <div className="recipe-title">{recipe.title}</div>
-                      <div className="meal-macros" style={{marginBottom: '8px'}}>
+                      <div className="meal-macros" style={{marginBottom: '10px'}}>
                         <span className="micro-tag">🔥 {Math.round(previewKcal)}</span>
                         <span className="micro-tag">🍗 {Math.round(previewPro)}g</span>
                       </div>
