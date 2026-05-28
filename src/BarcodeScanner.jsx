@@ -3,19 +3,20 @@ import { Html5Qrcode } from 'html5-qrcode';
 
 const BarcodeScanner = ({ onScanSuccess }) => {
   const [qrCodeScanner, setQrCodeScanner] = useState(null);
+  const [manualCode, setManualCode] = useState('');
 
   useEffect(() => {
     const html5QrCode = new Html5Qrcode("reader");
     setQrCodeScanner(html5QrCode);
 
-    // Proviamo comunque ad avviare lo scanner live
+    // Manteniamo la fotocamera live in background per sicurezza
     html5QrCode.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 250, height: 120 } },
       (decodedText) => {
         html5QrCode.stop().then(() => onScanSuccess(decodedText)).catch(console.error);
       },
-      (errorMessage) => {} // Ignoriamo gli errori di scansione a vuoto
+      (errorMessage) => {} 
     ).catch(err => console.error("Video live fallito:", err));
 
     return () => {
@@ -25,46 +26,78 @@ const BarcodeScanner = ({ onScanSuccess }) => {
     };
   }, []);
 
-  // IL TRUCCO PER IPHONE: Analizza una foto scattata in alta risoluzione
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
-    if (!file || !qrCodeScanner) return;
+    if (!file) return;
 
     try {
-      // Se il video sta andando, lo fermiamo
-      if (qrCodeScanner.isScanning) {
+      if (qrCodeScanner && qrCodeScanner.isScanning) {
         await qrCodeScanner.stop();
       }
-      // Legge il codice direttamente dall'immagine in altissima qualità
-      const decodedText = await qrCodeScanner.scanFile(file, true);
-      onScanSuccess(decodedText);
+
+      // Trasformiamo la foto in un formato analizzabile dal telefono
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      await new Promise((resolve) => { img.onload = resolve; });
+
+      // SUPER TRUCCO: Usiamo il motore di visione nativo di iOS (Safari 17+)
+      if ('BarcodeDetector' in window) {
+        const detector = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'qr_code'] });
+        const barcodes = await detector.detect(img);
+        if (barcodes.length > 0) {
+          onScanSuccess(barcodes[0].rawValue);
+          return;
+        }
+      }
+
+      // Se il motore Apple fallisce, riproviamo con la libreria
+      if (qrCodeScanner) {
+         const decodedText = await qrCodeScanner.scanFile(file, true);
+         onScanSuccess(decodedText);
+         return;
+      }
+
+      throw new Error("Codice non rilevato");
     } catch (err) {
-      alert("Non sono riuscito a trovare il codice nella foto. Assicurati che non ci siano riflessi e che sia ben a fuoco!");
+      console.error(err);
+      alert("La confezione riflette troppo o il codice è curvo. Scrivi i numerini a mano qua sotto, facciamo prima!");
+    }
+  };
+
+  const handleManualSubmit = (e) => {
+    e.preventDefault();
+    if (manualCode.trim() !== '') {
+      if (qrCodeScanner && qrCodeScanner.isScanning) qrCodeScanner.stop();
+      onScanSuccess(manualCode.trim());
     }
   };
 
   return (
     <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '12px', border: '2px solid #007bff' }}>
       
-      {/* BOTTONE MAGICO CHE APRE LA FOTOCAMERA NATIVA DI IOS */}
       <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-        <p style={{fontSize: '0.9em', color: '#333', marginBottom: '10px'}}>
-          Non legge? Usa la fotocamera nativa dell'iPhone:
-        </p>
         <label style={{
           backgroundColor: '#ff3b30', color: 'white', padding: '12px 20px', 
           borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'inline-block',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '20px'
         }}>
           📸 Scatta una Foto al Codice
-          <input 
-            type="file" 
-            accept="image/*" 
-            capture="environment" 
-            onChange={handleImageUpload}
-            style={{ display: 'none' }} 
-          />
+          <input type="file" accept="image/*" capture="environment" onChange={handleImageUpload} style={{ display: 'none' }} />
         </label>
+
+        {/* L'ANCORA DI SALVEZZA: Inserimento manuale */}
+        <form onSubmit={handleManualSubmit} style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+          <input 
+            type="number" 
+            placeholder="O scrivi i numerini qui..." 
+            value={manualCode}
+            onChange={(e) => setManualCode(e.target.value)}
+            style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc', flex: 1, fontSize: '16px' }}
+          />
+          <button type="submit" style={{ padding: '10px 15px', borderRadius: '8px', border: 'none', backgroundColor: '#28a745', color: 'white', fontWeight: 'bold', fontSize: '16px' }}>
+            Cerca
+          </button>
+        </form>
       </div>
 
       <div id="reader" style={{ width: '100%', borderRadius: '8px', overflow: 'hidden' }}></div>
