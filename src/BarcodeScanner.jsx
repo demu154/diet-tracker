@@ -1,47 +1,72 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 
 const BarcodeScanner = ({ onScanSuccess }) => {
+  const [qrCodeScanner, setQrCodeScanner] = useState(null);
+
   useEffect(() => {
-    // Usiamo il motore puro, molto più reattivo
     const html5QrCode = new Html5Qrcode("reader");
+    setQrCodeScanner(html5QrCode);
 
-    const config = {
-      fps: 15, // Aumentiamo i frame per secondo per catturarlo al volo
-      qrbox: { width: 250, height: 120 }, // Riquadro perfetto per i codici a barre
-      aspectRatio: 1.777778 // Forza l'uso in 16:9 per avere più risoluzione
-    };
-
+    // Proviamo comunque ad avviare lo scanner live
     html5QrCode.start(
-      { facingMode: "environment" }, // Fotocamera posteriore
-      config,
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 120 } },
       (decodedText) => {
-        // Appena lo becca, spegne tutto e invia il codice
-        html5QrCode.stop().then(() => {
-          onScanSuccess(decodedText);
-        }).catch(err => console.error(err));
+        html5QrCode.stop().then(() => onScanSuccess(decodedText)).catch(console.error);
       },
-      (errorMessage) => {
-        // Silenziamo gli errori continui finché non trova il codice
-      }
-    ).catch(err => {
-      console.error("Errore avvio fotocamera:", err);
-    });
+      (errorMessage) => {} // Ignoriamo gli errori di scansione a vuoto
+    ).catch(err => console.error("Video live fallito:", err));
 
-    // Spegne la fotocamera se chiudi prima di scansionare
     return () => {
       if (html5QrCode.isScanning) {
-        html5QrCode.stop().catch(err => console.error(err));
+        html5QrCode.stop().catch(console.error);
       }
     };
   }, []);
 
+  // IL TRUCCO PER IPHONE: Analizza una foto scattata in alta risoluzione
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file || !qrCodeScanner) return;
+
+    try {
+      // Se il video sta andando, lo fermiamo
+      if (qrCodeScanner.isScanning) {
+        await qrCodeScanner.stop();
+      }
+      // Legge il codice direttamente dall'immagine in altissima qualità
+      const decodedText = await qrCodeScanner.scanFile(file, true);
+      onScanSuccess(decodedText);
+    } catch (err) {
+      alert("Non sono riuscito a trovare il codice nella foto. Assicurati che non ci siano riflessi e che sia ben a fuoco!");
+    }
+  };
+
   return (
     <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '12px', border: '2px solid #007bff' }}>
-      <p style={{textAlign: 'center', fontSize: '0.9em', color: '#333', marginBottom: '15px'}}>
-        Centra il codice a barre nel riquadro.<br/>
-        <strong>Muovi il telefono avanti e indietro</strong> per mettere a fuoco.
-      </p>
+      
+      {/* BOTTONE MAGICO CHE APRE LA FOTOCAMERA NATIVA DI IOS */}
+      <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+        <p style={{fontSize: '0.9em', color: '#333', marginBottom: '10px'}}>
+          Non legge? Usa la fotocamera nativa dell'iPhone:
+        </p>
+        <label style={{
+          backgroundColor: '#ff3b30', color: 'white', padding: '12px 20px', 
+          borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'inline-block',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+        }}>
+          📸 Scatta una Foto al Codice
+          <input 
+            type="file" 
+            accept="image/*" 
+            capture="environment" 
+            onChange={handleImageUpload}
+            style={{ display: 'none' }} 
+          />
+        </label>
+      </div>
+
       <div id="reader" style={{ width: '100%', borderRadius: '8px', overflow: 'hidden' }}></div>
     </div>
   );
