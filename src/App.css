@@ -47,12 +47,8 @@ h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2
 /* Overlays & Scanner */
 .fab-button { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 30px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; font-size: 28px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); border: none; cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; }
 .fab-button:active { transform: scale(0.9); }
-
-/* Fix Tagli Mobile: Usiamo height: 100dvh e box-sizing */
 .scanner-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; height: 100dvh; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
 .close-button { position: absolute; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-weight: bold; font-size: 16px; cursor: pointer; z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 0; }
-
-/* Modal Yuka/Scanner ottimizzato */
 .product-modal { background: #1e293b; border-radius: 24px; padding: 25px; width: 100%; max-width: 350px; max-height: 85dvh; overflow-y: auto; text-align: center; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; position: relative; }
 .product-image { width: 140px; height: 140px; object-fit: contain; border-radius: 16px; margin-bottom: 15px; background: white; padding: 10px; }
 .product-title { font-size: 20px; font-weight: 800; margin-bottom: 10px; color: white; }
@@ -63,25 +59,25 @@ h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2
 .pm-item span { font-size: 16px; font-weight: 800; color: white; margin-top: 4px; }
 
 /* -------------------
-   BOTTOM SHEET RICETTARIO (Menu iOS dal basso Fixato)
+   BOTTOM SHEET RICETTARIO (Menu iOS dal basso)
    ------------------- */
 .scanner-overlay.bottom-sheet { justify-content: flex-end; padding: 0; }
-
-/* Modificato max-height in height fisso a 85dvh per non farlo espandere oltre lo schermo */
 .recipe-modal { width: 100%; max-width: 500px; background: #0f172a; border-radius: 30px 30px 0 0; padding: 25px 20px; height: 85dvh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); border-top: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; position: relative; }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .recipe-modal h2 { margin-top: 0; margin-bottom: 15px; color: white; font-size: 22px; }
-
-/* La barra di ricerca si rimpicciolisce ma non si schiaccia */
 .recipe-search-bar { display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0; }
 .recipe-search-input { flex: 1; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.2); background: #1e293b; color: white; font-size: 16px; }
 .recipe-search-btn { background: #3b82f6; color: white; border: none; border-radius: 12px; padding: 0 20px; font-weight: bold; cursor: pointer; }
 
-/* Griglia a 2 colonne per le Ricette - IL SEGRETO E' FLEX: 1 e OVERFLOW-Y: AUTO */
-.recipe-results { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; overflow-y: auto; flex: 1; padding-bottom: 40px; margin-top: 5px; }
-.recipe-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; padding: 0; transition: transform 0.2s; }
-.recipe-card:active { transform: scale(0.95); }
-.recipe-img { width: 100%; height: 110px; object-fit: cover; border-radius: 0; }
-.recipe-info { padding: 12px; display: flex; flex-direction: column; flex: 1; }
-.recipe-title { font-weight: 700; font-size: 14px; margin-bottom: 8px; color: #f8fafc; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.confirm-replace-btn { background: #10b981; color: white; border: none; border-radius: 10px; padding: 10px; font-weight: bold; font-size: 13px; cursor: pointer; margin-top: auto; width: 100%; }
+/* Layout a Singola Colonna Orizzontale (Fix Immagini grandi) */
+.recipe-results { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; padding-bottom: 40px; margin-top: 5px; }
+.recipe-card { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; overflow: hidden; display: flex; flex-direction: row; padding: 12px; transition: transform 0.2s; align-items: center; gap: 15px; cursor: pointer; }
+.recipe-card:active { transform: scale(0.97); }
+
+/* Immagine fissa a sinistra */
+.recipe-img { width: 85px; height: 85px; object-fit: cover; border-radius: 12px; flex-shrink: 0; }
+
+/* Info e bottone a destra */
+.recipe-info { display: flex; flex-direction: column; flex: 1; justify-content: center; text-align: left; overflow: hidden; }
+.recipe-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; color: #f8fafc; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.confirm-replace-btn { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.5); border-radius: 8px; padding: 6px 12px; font-weight: bold; font-size: 12px; margin-top: 6px; align-self: flex-start; text-transform: uppercase; letter-spacing: 0.5px; }
