@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
-import BarcodeScanner from './BarcodeScanner'
+// import BarcodeScanner from './BarcodeScanner'
 import './App.css'
 
 function App() {
   const [meals, setMeals] = useState([]);
   const [variant, setVariant] = useState(1);
-  const [isScanning, setIsScanning] = useState(false); // Controlla se la fotocamera è accesa
+  // const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
     async function fetchMeals() {
@@ -25,6 +25,9 @@ function App() {
 
   const totalCalories = meals.reduce((acc, meal) => acc + meal.calories, 0);
   const consumedCalories = meals.filter(m => m.eaten).reduce((acc, meal) => acc + meal.calories, 0);
+  
+  // Calcolo per la percentuale della barra di progresso
+  const progressPercentage = totalCalories > 0 ? (consumedCalories / totalCalories) * 100 : 0;
 
   const toggleMeal = (id) => {
     setMeals(meals.map(meal => 
@@ -32,81 +35,64 @@ function App() {
     ));
   };
 
-  // Funzione magica che riceve il codice a barre e cerca il prodotto
-  const handleScan = async (barcode) => {
-    setIsScanning(false); // Chiudiamo la fotocamera
-    
-    try {
-      // Chiamata all'API gratuita di Open Food Facts
-      const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
-      const data = await response.json();
-      
-      if (data.status === 1) {
-        const product = data.product;
-        const name = product.product_name_it || product.product_name || "Prodotto Sconosciuto";
-        const kcal = product.nutriments['energy-kcal_100g'] || "N/A";
-        
-        // Per ora mostriamo un alert visivo con i dati trovati
-        alert(`Trovato: ${name}\nCalorie: ${kcal} kcal per 100g\n\n(Più avanti aggiungeremo la logica per inserirlo direttamente nella lista!)`);
-      } else {
-        alert("Prodotto non trovato nel database globale.");
-      }
-    } catch (err) {
-      alert("Errore di connessione durante la ricerca del prodotto.");
-    }
-  };
+  /*
+  const handleScan = (code) => { ... } // Lo teniamo pronto per il futuro
+  */
 
   return (
     <div className="app-container">
       <header>
-        <h1>Diario Alimentare 🍎</h1>
+        <h1>Diario Alimentare</h1>
         
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '25px' }}>
+        {/* Segmented Control in perfetto stile iOS */}
+        <div className="segmented-control">
           {[1, 2, 3].map(num => (
-            <button key={num} onClick={() => setVariant(num)} 
-              style={{ 
-                padding: '8px 12px', borderRadius: '8px', border: 'none', 
-                backgroundColor: variant === num ? '#007bff' : '#e0e0e0', 
-                color: variant === num ? 'white' : 'black' 
-              }}>
+            <button 
+              key={num} 
+              onClick={() => setVariant(num)} 
+              className={`segment-button ${variant === num ? 'active' : ''}`}
+            >
               Menu {num}
             </button>
           ))}
         </div>
 
+        {/* Nuova Barra di Progresso Fluida */}
         <div className="calorie-tracker">
-          <h2>{consumedCalories} / {totalCalories} kcal</h2>
-          <progress value={consumedCalories} max={totalCalories}></progress>
+          <h2>{consumedCalories} <span style={{ color: '#8e8e93', fontSize: '18px' }}>/ {totalCalories} kcal</span></h2>
+          <div className="progress-bg">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${progressPercentage}%` }}
+            ></div>
+          </div>
         </div>
 
-        {/* Bottone per attivare lo scanner */}
-        <button 
-          onClick={() => setIsScanning(!isScanning)}
-          style={{ width: '100%', padding: '15px', marginTop: '15px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '12px', fontSize: '1.1em', fontWeight: 'bold', cursor: 'pointer' }}>
-          {isScanning ? "❌ Chiudi Fotocamera" : "📸 Scansiona Prodotto"}
-        </button>
+        {/* <button className="action-button" onClick={() => setIsScanning(!isScanning)}>
+          📸 Scansiona Prodotto
+        </button> */}
       </header>
 
       <main>
-        {/* Mostriamo lo scanner se è attivo, altrimenti mostriamo la lista dei pasti */}
-        {isScanning ? (
-          <BarcodeScanner onScanSuccess={handleScan} />
-        ) : (
-          <div className="meal-list" style={{ marginTop: '20px' }}>
-            {meals.map((meal) => (
-              <label key={meal.id} className={`meal-item ${meal.eaten ? 'eaten' : ''}`}>
-                <input type="checkbox" checked={meal.eaten} onChange={() => toggleMeal(meal.id)} />
-                <div style={{ flex: 1, marginLeft: '15px', textAlign: 'left' }}>
-                  <div className="meal-name">{meal.meal_type}: {meal.name}</div>
-                  <div style={{ fontSize: '0.85em', color: '#666', marginTop: '4px', lineHeight: '1.4' }}>
-                    {meal.description}
-                  </div>
+        <div className="meal-list">
+          {meals.map((meal) => (
+            <label key={meal.id} className={`meal-item ${meal.eaten ? 'eaten' : ''}`}>
+              <input type="checkbox" checked={meal.eaten} onChange={() => toggleMeal(meal.id)} />
+              
+              {/* Checkbox rotondo custom */}
+              <div className="custom-checkbox"></div>
+              
+              <div style={{ flex: 1 }}>
+                <div className="meal-name">{meal.meal_type}: {meal.name}</div>
+                <div className="meal-desc">
+                  {meal.description}
                 </div>
-                <span className="meal-calories" style={{ marginLeft: '10px' }}>{meal.calories} kcal</span>
-              </label>
-            ))}
-          </div>
-        )}
+              </div>
+              
+              <div className="meal-calories">{meal.calories} kcal</div>
+            </label>
+          ))}
+        </div>
       </main>
     </div>
   )
